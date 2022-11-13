@@ -44,7 +44,7 @@ Items.findByCardNo = (cardNo, result) => {
   });
 };
 
-Items.findByDate = (paramsdate, date1, date2, result) => {
+Items.findByDate = (params, date1, date2, result) => {
   const sql = `SELECT items.CardNo, items.Name, items.Description, items.Category, items.Price, items.CreatedAt, items.UpdatedAt, cards.CardNo FROM items, cards WHERE (items.CreatedAt > '${date1}' AND items.CreatedAt < '${date2}') AND items.CardNo = cards.Id`;
   console.log("sql: ", sql);
   db.all(sql, [], (err, items) => {
@@ -58,7 +58,7 @@ Items.findByDate = (paramsdate, date1, date2, result) => {
 
     if (items.length > 0) {
       console.log("found items: ", items);
-      result(null, { status: true, message: "Get items with date "+paramsdate, data: items, count: items.length });
+      result(null, { status: true, message: "Get items with "+params, data: items, count: items.length });
       return;
     }
 

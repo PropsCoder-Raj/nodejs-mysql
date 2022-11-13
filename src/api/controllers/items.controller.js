@@ -1,5 +1,16 @@
 const Items = require("../models/items.model");
 
+const getAllDaysInMonth = (year, month) => {
+  const date = new Date(`${year}-${Number(month)}-01`);
+  const dates = [];
+  while ((date.getMonth() + 1) === Number(month)) {
+    dates.push(new Date(date));
+    console.log("dates: ", dates);
+    date.setDate(date.getDate() + 1);
+  }
+  return dates;
+}
+
 // Create and Save a new Items
 exports.create = (req, res) => {
   // Validate request
@@ -59,7 +70,7 @@ exports.findByDate = (req, res) => {
   tomorrow.setMinutes(0);
   var date2 = [tomorrow.getFullYear(), tomorrow.getMonth()+1, tomorrow.getDate()].join('-');
 
-  Items.findByDate(req.params.date, date1, date2, (err, data) => {
+  Items.findByDate(req.params.date + " date", date1, date2, (err, data) => {
     if (err) {
       if (err.kind === "not_found") {
         res.status(404).send({
@@ -70,6 +81,30 @@ exports.findByDate = (req, res) => {
         res.status(500).send({
           status: false,
           message: "Error retrieving Items with Date " + req.params.date
+        });
+      }
+    } else res.send(data);
+  });
+};
+
+
+// Find all items by month, year
+exports.findByMonthYear = async(req, res) => {
+  var array = await getAllDaysInMonth(req.params.year_number, req.params.month_number);
+  var params = req.params.month_number + " month and " + req.params.year_number + " year";
+  var date1 = [array[0].getFullYear(), array[0].getMonth()+1, array[0].getDate()].join('-');
+  var date2 = [array[array.length - 1].getFullYear(), array[array.length - 1].getMonth()+1, array[array.length - 1].getDate()].join('-');
+  Items.findByDate(params, date1, date2, (err, data) => {
+    if (err) {
+      if (err.kind === "not_found") {
+        res.status(404).send({
+          status: false,
+          message: `Not found Items with ${params}.`
+        });
+      } else {
+        res.status(500).send({
+          status: false,
+          message: "Error retrieving Items with " + params
         });
       }
     } else res.send(data);

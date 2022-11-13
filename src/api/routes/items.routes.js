@@ -12,6 +12,9 @@ module.exports = app => {
     // Get items by Date
     router.get("/day/:date", items.findByDate);
 
+    // Get items by Date
+    router.get("/month/:month_number/:year_number", items.findByMonthYear);
+    
     // Get items by CardNo
     router.delete("/card/:card_number", items.deleteByCardNo);
 
