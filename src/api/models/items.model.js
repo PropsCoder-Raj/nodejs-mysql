@@ -1,4 +1,4 @@
-const sql = require("./db");
+const db = require("./db");
 
 
 // constructor
@@ -11,30 +11,31 @@ const Items = function(item) {
 };
 
 Items.create = (newItems, result) => {
-    console.log("newItems: ", newItems);
-    sql.query("INSERT INTO items SET ?", newItems, (err, res) => {
+    const sql = "INSERT INTO items (Name, Description, Category, Price, CardNo) VALUES (?, ?, ?, ?, ?)";
+    db.run(sql, [newItems.Name, newItems.Description, newItems.Category, newItems.Price, newItems.CardNo], (err, res) => {
       if (err) {
         console.log("error: ", err);
         result(err, null);
         return;
       }
   
-      console.log("created cards: ", { Id: res.insertId, ...newItems });
-      result(null, { Id: res.insertId, ...newItems });
+      getItems();
+      result(null, { status: true, message: "A new item has been craeted." });
     });
 };
 
 Items.findByCardNo = (cardNo, result) => {
-  sql.query(`SELECT items.CardNo, items.Name, items.Description, items.Category, items.Price, cards.CardNo FROM items, cards WHERE cards.CardNo = ${cardNo} AND items.CardNo = cards.Id`, (err, res) => {
+  const sql = `SELECT items.CardNo, items.Name, items.Description, items.Category, items.Price, items.CreatedAt, items.UpdatedAt, cards.CardNo FROM items, cards WHERE cards.CardNo = ${cardNo} AND items.CardNo = cards.Id`;
+  db.all(sql, [], (err, items) => {
     if (err) {
       console.log("error: ", err);
       result(err, null);
       return;
     }
 
-    if (res.length) {
-      console.log("found items: ", res);
-      result(null, res);
+    if (items.length > 0) {
+      console.log("found items: ", items);
+      result(null, { status: true, message: "Get items with card no "+cardNo, data: items, count: items.length });
       return;
     }
 
@@ -43,35 +44,88 @@ Items.findByCardNo = (cardNo, result) => {
   });
 };
 
-
-Items.removeByCardNo = (cardNo, result) => {
-  sql.query(`DELETE FROM items WHERE EXISTS (SELECT * FROM cards AS T1 WHERE T1.CardNo = ${cardNo} AND T1.Id = Items.CardNo);`, (err, res) => {
+Items.findByDate = (paramsdate, date1, date2, result) => {
+  const sql = `SELECT items.CardNo, items.Name, items.Description, items.Category, items.Price, items.CreatedAt, items.UpdatedAt, cards.CardNo FROM items, cards WHERE (items.CreatedAt > '${date1}' AND items.CreatedAt < '${date2}') AND items.CardNo = cards.Id`;
+  console.log("sql: ", sql);
+  db.all(sql, [], (err, items) => {
     if (err) {
       console.log("error: ", err);
-      result(null, err);
+      result(err, null);
       return;
     }
 
-    if (res.affectedRows > 0) {
-      console.log("deleted tutorial with id: ", cardNo);
-      result(null, res);
+    console.log("items: ", items);
+
+    if (items.length > 0) {
+      console.log("found items: ", items);
+      result(null, { status: true, message: "Get items with date "+paramsdate, data: items, count: items.length });
+      return;
+    }
+
+    // not found Items with the cardNo
+    result({ kind: "not_found" }, null);
+  });
+};
+
+Items.removeByCardNo = (cardNo, result) => {
+  const sql = `DELETE FROM items WHERE EXISTS (SELECT * FROM cards AS T1 WHERE T1.CardNo = (?) AND T1.Id = Items.CardNo);`;
+  db.run(sql, cardNo, (err, res) => {
+    if (err) {
+      console.log("error: ", err);
+      result(null, { status: err, message: err });
       return;
     }
     
     // not found Items with the cardNo
-    result({ kind: "not_found" }, null);
+    result(null, { status: true, message: `Card No - ${cardNo}. Items was deleted successfully!` });
   });
 };
 
 const initItemTable = () => {
-    sql.query("CREATE TABLE `items` (`Id` INT NOT NULL AUTO_INCREMENT , `Name` VARCHAR(200) NOT NULL , `Description` VARCHAR(400) NOT NULL , `Category` VARCHAR(200) NOT NULL , `Price` INT(100) NOT NULL, CardNo INT(100) NOT NULL,  `CreatedAt` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP , `UpdatedAt` TIMESTAMP on update CURRENT_TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP , PRIMARY KEY (`Id`),  FOREIGN KEY (CardNo) REFERENCES Cards(Id))", (err, res) => {
+  const sql = `CREATE TABLE IF NOT EXISTS items (
+    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+    Name TEXT,
+    Description TEXT,
+    Category TEXT,
+    Price INTEGER,
+    CardNo INTEGER,
+    CreatedAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UpdatedAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(CardNo) REFERENCES cards(Id) )`;
+
+    db.run(sql, (err, res) => {
         if (err) {
-          console.log("error: ", err.sqlMessage);
+          console.log("error: ", err.message);
           return;
         }
     
+        getItems();
         console.log("created Items Table");
     });
+}
+
+const getItems = () => {
+  const sql = `SELECT * FROM items`;
+  db.all(sql, [], (err, items) => {
+    if (err) {
+      console.log("error: ", err);
+      return;
+    }
+
+    console.log("Items: ", items);
+  });
+}
+
+const dropTable = () => {
+  const sql = `DROP TABLE items`;
+  db.all(sql, [], (err, items) => {
+    if (err) {
+      console.log("error: ", err);
+      return;
+    }
+
+    console.log("Items: ", items);
+  });
 }
 
 initItemTable();

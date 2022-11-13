@@ -4,13 +4,16 @@ module.exports = app => {
     var router = require("express").Router();
 
     // Create a new Items
-    router.post("/", items.create);
+    router.post("/item", items.create);
     
     // Get items by CardNo
-    router.get("/by-card-no/:cardNo", items.findByCardNo);
+    router.get("/card/:card_number", items.findByCardNo);
+    
+    // Get items by Date
+    router.get("/day/:date", items.findByDate);
 
     // Get items by CardNo
-    router.delete("/by-card-no/:cardNo", items.deleteByCardNo);
+    router.delete("/card/:card_number", items.deleteByCardNo);
 
-    app.use('/api/items', router);
+    app.use('/', router);
 };

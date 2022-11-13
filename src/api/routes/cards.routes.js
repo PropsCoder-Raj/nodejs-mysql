@@ -4,7 +4,7 @@ module.exports = app => {
     var router = require("express").Router();
 
     // Create a new Cards
-    router.post("/", cards.create);
+    router.post("/card", cards.create);
 
-    app.use('/api/cards', router);
+    app.use('/', router);
 };

@@ -1,33 +1,64 @@
-const sql = require("./db");
+const db = require("./db");
 
 // constructor
-const Cards = function(cards) {
-    this.CardNo = cards.CardNo;
+const Cards = function (cards) {
+  this.CardNo = cards.CardNo;
 };
 
-Cards.create = (newCards, result) => {
-    console.log("newCards: ", newCards);
-    sql.query("INSERT INTO cards SET ?", newCards, (err, res) => {
-      if (err) {
-        console.log("error: ", err);
-        result(err, null);
-        return;
-      }
-  
-      console.log("created cards: ", { Id: res.insertId, ...newCards });
-      result(null, { Id: res.insertId, ...newCards });
-    });
+Cards.create = async (newCards, result) => {
+  const sql = `INSERT INTO cards (CardNo) VALUES (?)`;
+  db.run(sql, newCards.CardNo, (err, res) => {
+    if (err) {
+      console.log("error: ", err);
+      result(err, null);
+      return;
+    }
+
+    getCards();
+    result(null, { status: true, message: "A new card has been craeted." });
+  });
 };
 
 const initCardTable = () => {
-    sql.query("CREATE TABLE `cards` (`Id` INT NOT NULL AUTO_INCREMENT , `CardNo` INT(100) NOT NULL , `CreatedAt` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP , `UpdatedAt` TIMESTAMP on update CURRENT_TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP , PRIMARY KEY (`Id`))", (err, res) => {
-        if (err) {
-          console.log("error: ", err.sqlMessage);
-          return;
-        }
-    
-        console.log("created Cards Table");
-    });
+  const sql = `CREATE TABLE IF NOT EXISTS cards (
+    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+    CardNo INTEGER,
+    CreatedAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UpdatedAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP )`;
+
+  db.run(sql, (err, res) => {
+    if (err) {
+      console.log("error: ", err.message);
+      return;
+    }
+
+    getCards();
+    console.log("created Cards Table");
+  });
+}
+
+const getCards = () => {
+  const sql = `SELECT * FROM cards`;
+  db.all(sql, [], (err, cards) => {
+    if (err) {
+      console.log("error: ", err);
+      return;
+    }
+
+    console.log("Cards: ", cards);
+  });
+}
+
+const dropTable = () => {
+  const sql = `DROP TABLE cards`;
+  db.all(sql, [], (err, cards) => {
+    if (err) {
+      console.log("error: ", err);
+      return;
+    }
+
+    console.log("Cards: ", cards);
+  });
 }
 
 initCardTable();

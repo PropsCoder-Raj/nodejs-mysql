@@ -1,11 +1,9 @@
-const mysql = require("mysql");
-const dbConfig = require("../config/db.config.js");
+const sqlite3 = require('sqlite3');
 
-var connection = mysql.createPool({
-  host: dbConfig.HOST,
-  user: dbConfig.USER,
-  password: dbConfig.PASSWORD,
-  database: dbConfig.DB
-});
+const connection = new sqlite3.Database(process.cwd()+"./database/test.db", sqlite3.OPEN_READWRITE, (err, res) => {
+  if(err){
+    return console.error(err.message);
+  }
+})
 
 module.exports = connection;

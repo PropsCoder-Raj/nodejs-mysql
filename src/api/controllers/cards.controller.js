@@ -5,6 +5,7 @@ exports.create = (req, res) => {
   // Validate request
   if (!req.body) {
     res.status(400).send({
+      status: false,
       message: "Content can not be empty!"
     });
   }
@@ -18,6 +19,7 @@ exports.create = (req, res) => {
   Cards.create(cards, (err, data) => {
     if (err)
       res.status(500).send({
+        status: false,
         message:
           err.message || "Some error occurred while creating the Cards."
       });
