@@ -7,7 +7,10 @@ module.exports = app => {
     router.post("/", items.create);
     
     // Get items by CardNo
-    router.get("/:cardNo", items.findByCardNo);
+    router.get("/by-card-no/:cardNo", items.findByCardNo);
+
+    // Get items by CardNo
+    router.delete("/by-card-no/:cardNo", items.deleteByCardNo);
 
     app.use('/api/items', router);
 };

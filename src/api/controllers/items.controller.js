@@ -35,13 +35,31 @@ exports.findByCardNo = (req, res) => {
     if (err) {
       if (err.kind === "not_found") {
         res.status(404).send({
-          message: `Not found Items with CardNo ${req.params.id}.`
+          message: `Not found Items with CardNo ${req.params.cardNo}.`
         });
       } else {
         res.status(500).send({
-          message: "Error retrieving Items with CardNo " + req.params.id
+          message: "Error retrieving Items with CardNo " + req.params.cardNo
         });
       }
     } else res.send(data);
+  });
+};
+
+
+// Delete a items with the cardNo in the request
+exports.deleteByCardNo = (req, res) => {
+  Items.removeByCardNo(req.params.cardNo, (err, data) => {
+    if (err) {
+      if (err.kind === "not_found") {
+        res.status(404).send({
+          message: `Not found Items with Card No ${req.params.cardNo}.`
+        });
+      } else {
+        res.status(500).send({
+          message: "Could not delete Items with Card No " + req.params.cardNo
+        });
+      }
+    } else res.send({ message: `Card No - ${req.params.cardNo}. Items was deleted successfully!` });
   });
 };

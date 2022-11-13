@@ -38,7 +38,27 @@ Items.findByCardNo = (cardNo, result) => {
       return;
     }
 
-    // not found Tutorial with the id
+    // not found Items with the cardNo
+    result({ kind: "not_found" }, null);
+  });
+};
+
+
+Items.removeByCardNo = (cardNo, result) => {
+  sql.query(`DELETE FROM items WHERE EXISTS (SELECT * FROM cards AS T1 WHERE T1.CardNo = ${cardNo} AND T1.Id = Items.CardNo);`, (err, res) => {
+    if (err) {
+      console.log("error: ", err);
+      result(null, err);
+      return;
+    }
+
+    if (res.affectedRows > 0) {
+      console.log("deleted tutorial with id: ", cardNo);
+      result(null, res);
+      return;
+    }
+    
+    // not found Items with the cardNo
     result({ kind: "not_found" }, null);
   });
 };
